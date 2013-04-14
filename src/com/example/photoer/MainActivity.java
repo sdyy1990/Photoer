@@ -24,6 +24,8 @@ import org.apache.http.params.CoreConnectionPNames;
 import android.os.*;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -34,6 +36,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
@@ -43,8 +46,7 @@ public class MainActivity extends Activity {
 
     private final static String ALBUM_PATH  
             = Environment.getExternalStorageDirectory() + "/download/";
-	private static String urlstring = "http://192.168.1.111/fname";
-	private static String urlstringbase = "http://192.168.1.111/";
+	private String urlstringbase = "http://192.168.1.111/";
 	private static int MESSAGE_SIZE_REPORT = 1048576+1;
 	private static int MESSAGE_PERCENTAGE_REPORT = 1048576+2;
 	private boolean isGettingFilename = false;
@@ -72,7 +74,6 @@ public class MainActivity extends Activity {
 		});
 		ImageView uploadButton = (ImageView) findViewById(R.id.uploadView);
 		uploadButton.setOnClickListener(new ImageView.OnClickListener(){
-
 			@Override
 			public void onClick(View arg0) {
 				FTPClass ftp = new FTPClass();
@@ -86,6 +87,41 @@ public class MainActivity extends Activity {
 			}
 		
 		});
+		
+		ImageView settingView = (ImageView) findViewById(R.id.settingView);
+		settingView.setOnClickListener(new ImageView.OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+
+				alert.setTitle("Title");
+				alert.setMessage("Message");
+
+				// Set an EditText view to get user input 
+    			final EditText input = new EditText(MainActivity.this);
+    			input.setText(urlstringbase);
+				alert.setView(input);
+
+				alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				  String value = input.getText().toString();
+				  if (!value.endsWith("/")) value=value+"/";
+				  System.out.println(value);
+				  urlstringbase=value;
+				  // Do something with value!
+				  }
+				});
+
+				alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				  public void onClick(DialogInterface dialog, int whichButton) {
+				    // Canceled.
+				  }
+				});
+
+				alert.show();
+			}});
 	}
 
 	private boolean triggerNewPicture(){
@@ -107,7 +143,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void run() {
-			String url = urlstring;
+			String url = urlstringbase+"fname";
 			HttpGet httpRequest = new HttpGet(url);
 			try{
 				
@@ -238,7 +274,6 @@ public class MainActivity extends Activity {
 		BufferedOutputStream bos;
 		try {
 			bos = new BufferedOutputStream(new FileOutputStream(myCaptureFile));
-
 			bmp.compress(Bitmap.CompressFormat.JPEG, 99, bos);  
 			bos.flush();  
 			bos.close();  
