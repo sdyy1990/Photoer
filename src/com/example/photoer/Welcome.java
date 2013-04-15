@@ -41,12 +41,12 @@ public class Welcome extends Activity {
 			cameraurl = (br.readLine());
 			is.close();
 		} catch (FileNotFoundException e) {
-			ftpurl = "192.168.1.1";
-			cameraurl = "http://192.168.1.1";
+			ftpurl = "192.168.1.108";
+			cameraurl = "http://192.168.1.106";
 			e.printStackTrace();
 		} catch (IOException e) {
-			ftpurl = "192.168.1.1";
-			cameraurl = "http://192.168.1.1";
+			ftpurl = "192.168.1.108";
+			cameraurl = "http://192.168.1.106";
 			e.printStackTrace();
 		}
 		enter.setOnClickListener(new Button.OnClickListener(){
@@ -54,7 +54,7 @@ public class Welcome extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				final String name = nameText.getText().toString();
-				if (name == "aDmIn") {
+				if (name.equals("admin")) {
 					final EditText a1 = new EditText(Welcome.this);
 					final EditText a2 = new EditText(Welcome.this);
 					a1.setText(ftpurl);
@@ -95,7 +95,7 @@ public class Welcome extends Activity {
 					@Override
 					public void onClick(DialogInterface arg0, int arg1) {
 						
-					}} );
+					}} ).create().show();
 				    return;
 				}
 				new AlertDialog.Builder(Welcome.this).setTitle("确认").setMessage("请确认用户名   "+name)
@@ -108,9 +108,9 @@ public class Welcome extends Activity {
 						Intent intent = new Intent();
 						intent.setClass(Welcome.this, Camera.class);
 						Bundle bundle = new Bundle();
-						bundle.putString("uname",name+String.valueOf(rand));
+						bundle.putString("uname",name+"."+String.valueOf(rand));
 						bundle.putString("ftpurl", ftpurl);
-						bundle.putString("camerurl", cameraurl);
+						bundle.putString("cameraurl", cameraurl);
 						
 						intent.putExtras(bundle);
 						startActivity(intent);
@@ -122,7 +122,7 @@ public class Welcome extends Activity {
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
 						
-					}});
+					}}).create().show();
 						
 			}
 			

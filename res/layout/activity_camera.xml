@@ -1,0 +1,74 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_overlay"
+    android:columnCount="3"
+    tools:context=".Camera" >
+
+    <!--
+         The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc.
+    -->
+
+
+    <!--
+         This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows.
+    -->
+
+    <ImageView
+        android:id="@+id/shotView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="69dp"
+        android:layout_marginRight="89dp"
+        android:src="@drawable/camera" />
+
+    <ImageView
+        android:id="@+id/leftView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignBottom="@+id/shotView"
+        android:layout_toLeftOf="@+id/shotView"
+        android:src="@drawable/leftarrow" />
+
+    <ImageView
+        android:id="@+id/rightView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignTop="@+id/shotView"
+        android:layout_toRightOf="@+id/downView"
+        android:src="@drawable/rightarrow" />
+
+    <ImageView
+        android:id="@+id/downView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignLeft="@+id/shotView"
+        android:layout_below="@+id/rightView"
+        android:src="@drawable/downarrow" />
+
+    <ImageView
+        android:id="@+id/upView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@+id/shotView"
+        android:layout_toLeftOf="@+id/rightView"
+        android:src="@drawable/uparrow" />
+
+    <Button
+        android:id="@+id/buttonbrowser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="34dp"
+        android:text="浏览图片/上传"
+        android:textSize="30px" />
+
+</RelativeLayout>

@@ -7,27 +7,60 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
-
-    <TextView
-        android:id="@+id/textTest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
-
-    <Button
-        android:id="@+id/buttontest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="Test1" />
     
     <ImageView
         android:id="@+id/imageTest"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/imageShowView" />
+
+    <ImageView
+        android:id="@+id/imageShowView"
+        android:layout_width="600px"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/buttontest" />
+        android:layout_alignParentTop="true" />
 
+    <ImageView
+        android:id="@+id/uploadView"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_alignBottom="@+id/imageShowView"
+        android:layout_alignRight="@+id/imageShowView"
+        android:scaleType="fitCenter"
+        android:src="@drawable/upload" />
+
+    <ImageView
+        android:id="@+id/deleteimageView"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_alignBottom="@+id/imageShowView"
+        android:layout_alignLeft="@+id/imageShowView"
+        android:layout_marginLeft="160dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/delete" />
+
+    
+
+    <ImageView
+        android:id="@+id/buttontest"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_alignBottom="@+id/imageShowView"
+        android:layout_alignLeft="@+id/imageShowView"
+        android:scaleType="fitCenter"
+        android:src="@drawable/camera" />
+
+    <ImageView
+        android:id="@+id/settingView"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_alignRight="@+id/imageShowView"
+        android:layout_centerVertical="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/setting" />
 
 </RelativeLayout>
