@@ -35,7 +35,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 public class Camera extends Activity {
-	private ImageView buttonShot,buttonLeft,buttonRight,buttonUp,buttonDown;
+	private ImageView buttonShot,buttonLeft,buttonRight,buttonUp,buttonDown,buttonZoomIn,buttonZoomOut;
 
     private final static String ALBUM_PATH  
             = Environment.getExternalStorageDirectory() + "/download/";
@@ -53,6 +53,7 @@ public class Camera extends Activity {
 	//private static String shotUrlSuffix = "/cgi-bin/capture.cgi";
 	private static String shotUrlSuffix = "/ccgbin/capture.cgi";
 	private static String zoomUrlSuffix = "/cgi-bin/zoom.cgi?";
+	private static String moveUrlSuffix = "/cgi-bin/move.cgi?";
 	private static String pictureUrlFolder = "/img/";
 	private String cameraurl,ftpurl,uname,dlFilename;
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +68,18 @@ public class Camera extends Activity {
 		buttonRight = (ImageView) findViewById(R.id.rightView);
 		buttonUp = (ImageView) findViewById(R.id.upView);
 		buttonDown = (ImageView) findViewById(R.id.downView);
+		buttonZoomIn = (ImageView) findViewById(R.id.zoomInView);
+		buttonZoomOut = (ImageView) findViewById(R.id.zoomOutView);
 		Button buttonBrowser = (Button) findViewById(R.id.buttonbrowser);
 		networkBusy = false;
 		mhandler = new MyHandler();
-		
+		buttonLeft.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"L"));
+		buttonRight.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"R"));
+		buttonUp.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"U"));
+		buttonDown.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"D"));
+		buttonZoomIn.setOnClickListener(new myOnClickListener(cameraurl+zoomUrlSuffix,true,0,9));
+		buttonZoomOut.setOnClickListener(new myOnClickListener(cameraurl+zoomUrlSuffix,false,0,9));
+		new myOnClickListener(cameraurl+zoomUrlSuffix,false,0,9).zoomTo(0);
 		buttonBrowser.setOnClickListener(new Button.OnClickListener() {
 
 			@Override
@@ -150,9 +159,11 @@ public class Camera extends Activity {
 		        	while ((readLen = is.read(tmp))>0){
 		        		System.arraycopy(tmp, 0, imgData, destPos, readLen);
 		        		mhandler.obtainMessage(MESSAGE_PERCENTAGE_REPORT, 0,destPos);
-		        		System.out.println(destPos);
+//		        		System.out.println(destPos);
 		        		destPos += readLen;
 		        	}
+		        	is.close();
+		        	System.gc();
 		        	Bitmap downloadedBitmap = BitmapFactory.decodeByteArray(imgData, 0, length);
 		            if (downloadedBitmap == null) mhandler.obtainMessage(-6).sendToTarget();  
 		            else ;// display image  
@@ -264,6 +275,14 @@ public class Camera extends Activity {
 			else if (msg.what == -3){
 				Toast.makeText(Camera.this,"拍照：一般网络错误",Toast.LENGTH_SHORT).show();
 			}
+			if (msg.what == -9) {
+				//Toast.makeText(Camera.this,"Motion：网络链接错误:ClientProtocolException",Toast.LENGTH_SHORT).show();
+			}else if (msg.what == -10) {
+				//Toast.makeText(Camera.this,"Motion：请检查链路有效",Toast.LENGTH_SHORT).show();
+			}
+			else if (msg.what == -11){
+				//Toast.makeText(Camera.this,"Protocal：一般网络错误",Toast.LENGTH_SHORT).show();
+			}
 			else if (msg.what == -5) {
 				Toast.makeText(Camera.this, "下载照片：一般网络错误", Toast.LENGTH_SHORT).show();
 			}
@@ -271,6 +290,67 @@ public class Camera extends Activity {
 				Toast.makeText(Camera.this, "下载照片：文件错误", Toast.LENGTH_SHORT).show();
 			}
 			return;
+			
+		}
+	}
+	private int zoomLevel ;
+	private class myOnClickListener implements Button.OnClickListener {
+		private String motionURL,lUrl;
+		
+		private boolean iszoom,isZoomIn;
+		int zoomMin,zoomMax;
+		myOnClickListener(final String str) {
+			super();
+			this.motionURL = str;
+			this.iszoom = false;
+			lUrl = null;
+		}
+
+		myOnClickListener(final String str,boolean isZoomIn,int zoomMin,int zoomMax) {
+			super();
+			this.lUrl = str;
+			this.iszoom = true;
+			this.isZoomIn=isZoomIn;
+			this.zoomMax = zoomMax;
+			this.zoomMin = zoomMin;
+		}
+		@Override
+		public void onClick(View arg0) {
+			if (iszoom){
+				if (isZoomIn) zoomLevel ++;
+				else zoomLevel --;
+				if (zoomLevel<zoomMin) zoomLevel = zoomMin;
+				if (zoomLevel>zoomMax) zoomLevel = zoomMax;
+				zoomTo(zoomLevel);
+			}
+			new Thread(new getMotion()).start();
+		}
+		
+		private void zoomTo(int zoomLevel) {
+			motionURL = lUrl+String.valueOf(zoomLevel);
+			new Thread(new getMotion()).start();
+		}
+
+		private class getMotion implements Runnable{
+			@Override
+			public void run() {
+				String url = cameraurl + motionURL;
+				HttpGet httpRequest = new HttpGet(url);
+				try{
+					BasicHttpParams hpms = new BasicHttpParams();
+					DefaultHttpClient dfh = new DefaultHttpClient(hpms);
+					dfh.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
+					dfh.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 11000);
+					dfh.execute(httpRequest);
+				}catch (ClientProtocolException e){
+					mhandler.obtainMessage(-9).sendToTarget();
+				}catch (IOException e) {
+					mhandler.obtainMessage(-10).sendToTarget();			
+				}catch (Exception e) {
+					mhandler.obtainMessage(-11).sendToTarget();
+				}
+			}
+			
 			
 		}
 	}

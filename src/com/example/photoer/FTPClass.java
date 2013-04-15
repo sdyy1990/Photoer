@@ -22,9 +22,14 @@ public class FTPClass {
 		 * @param fileName		要上传的文件名
 		 * @return
 		 */
+	 FTPClass(Handler handler){
+		 this.handler = handler;
+	 }
+	 
 	 private FTPClient ftpClient;
 	 private String murl,mport,musername,mpwd,mrmp,mfname;
 	 FileInputStream mfis;
+	 
 	 public String ftpUpload(String url, String port, String username,String password, String remotePath,String fileName,FileInputStream fis) {
 		 ftpClient = new FTPClient();
 		 String returnMessage = "0";
@@ -52,37 +57,31 @@ public class FTPClass {
 						 ftpClient.setControlEncoding("UTF-8");
 						 ftpClient.enterLocalPassiveMode();
 						 ftpClient.storeFile(mfname, mfis);
-						 
+						 handler.obtainMessage(0, 0, 0, mrmp).sendToTarget();
 						 }
 					 		 
 			
 				 } catch (IOException e) {
 					 e.printStackTrace();
-					 throw new RuntimeException("FTP客户端出错！", e);
+					 handler.obtainMessage(1).sendToTarget();
 				 } finally {
 					 //IOUtils.closeQuietly(fis);
 				 try {
 					 ftpClient.disconnect();
 				 } catch (IOException e) {
 					 	e.printStackTrace();
-					 	throw new RuntimeException("关闭FTP连接发生异常！", e);
+					 	handler.obtainMessage(2).sendToTarget();
 				 	}
 				 }
 
-					handler.sendEmptyMessage(0);
+
 			}
 
 	 }
 
 		 //定义Handler对象
-		 private Handler handler =new Handler(){
-		 @Override
-		 //当有消息发送出来的时候就执行Handler的这个方法
-		 public void handleMessage(Message msg){
-		 super.handleMessage(msg);
-		 //处理UI
-		 }
-		 };
+		 private Handler handler;
+	
 
 
 }

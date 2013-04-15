@@ -25,7 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class Welcome extends Activity {
-	String ftpurl,cameraurl;
+	String ftpurl,cameraurl,ftpusr,ftppwd;
 	@Override
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,14 +39,21 @@ public class Welcome extends Activity {
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			ftpurl = (br.readLine());
 			cameraurl = (br.readLine());
+			ftpusr = (br.readLine());
+			ftppwd = (br.readLine());
+			
 			is.close();
 		} catch (FileNotFoundException e) {
 			ftpurl = "192.168.1.108";
 			cameraurl = "http://192.168.1.106";
+			ftpusr = "anonymous";
+			ftppwd = "a@b.com";
 			e.printStackTrace();
 		} catch (IOException e) {
 			ftpurl = "192.168.1.108";
 			cameraurl = "http://192.168.1.106";
+			ftpusr = "anonymous";
+			ftppwd = "a@b.com";
 			e.printStackTrace();
 		}
 		enter.setOnClickListener(new Button.OnClickListener(){
@@ -57,8 +64,12 @@ public class Welcome extends Activity {
 				if (name.equals("admin")) {
 					final EditText a1 = new EditText(Welcome.this);
 					final EditText a2 = new EditText(Welcome.this);
+					final EditText a3 = new EditText(Welcome.this);
+					final EditText a4 = new EditText(Welcome.this);
 					a1.setText(ftpurl);
 					a2.setText(cameraurl);
+					a3.setText(ftpusr);
+					a4.setText(ftppwd);
 					new AlertDialog.Builder(Welcome.this).setTitle("FTP IP").setIcon(
 						     android.R.drawable.ic_dialog_info).setView(a1)
 						     .setPositiveButton("OK",  new OnClickListener(){
@@ -67,19 +78,36 @@ public class Welcome extends Activity {
 										public void onClick(DialogInterface dialog,	int which) {
 											ftpurl = a1.getText().toString();
 										}} ).create().show();
+					
 					new AlertDialog.Builder(Welcome.this).setTitle("camra IP").setIcon(
 						     android.R.drawable.ic_dialog_info).setView(a2)
+						     .setPositiveButton("OK",  new OnClickListener(){
+										public void onClick(DialogInterface dialog,	int which) {
+											cameraurl = a2.getText().toString();
+										}} ).create().show();
+					new AlertDialog.Builder(Welcome.this).setTitle("FTP user").setIcon(
+						     android.R.drawable.ic_dialog_info).setView(a3)
+						     .setPositiveButton("OK",  new OnClickListener(){
+										public void onClick(DialogInterface dialog,	int which) {
+											ftpusr = a3.getText().toString();
+										}} ).create().show();
+					
+					new AlertDialog.Builder(Welcome.this).setTitle("FTP pwd").setIcon(
+						     android.R.drawable.ic_dialog_info).setView(a4)
 						     .setPositiveButton("OK",  new OnClickListener(){
 
 										@Override
 										public void onClick(DialogInterface dialog,	int which) {
-											cameraurl = a2.getText().toString();
+											ftppwd = a4.getText().toString();
 										}} ).create().show();
+					
 					try {
 						FileOutputStream os = Welcome.this.openFileOutput("URLS.txt",MODE_PRIVATE);
 						BufferedWriter br = new BufferedWriter(new OutputStreamWriter(os));
 						br.write(ftpurl+"\n");
 						br.write(cameraurl+"\n");
+						br.write(ftpusr+"\n");
+						br.write(ftppwd+"\n");
 						br.close();
 						os.close();
 						} catch (IOException e) {
@@ -111,7 +139,8 @@ public class Welcome extends Activity {
 						bundle.putString("uname",name);//+"."+String.valueOf(rand));
 						bundle.putString("ftpurl", ftpurl);
 						bundle.putString("cameraurl", cameraurl);
-						
+						bundle.putString("ftpusr", ftpusr);
+						bundle.putString("ftppwd", ftppwd);
 						intent.putExtras(bundle);
 						startActivity(intent);
 						Welcome.this.finish();

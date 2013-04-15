@@ -71,4 +71,24 @@
         android:text="浏览图片/上传"
         android:textSize="30px" />
 
+    <ImageView
+        android:id="@+id/zoomInView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="28dp"
+        android:layout_marginTop="66dp"
+        android:src="@drawable/zoomin" />
+
+    <ImageView
+        android:id="@+id/zoomOutView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="66dp"
+        android:layout_marginLeft="28dp"
+        android:src="@drawable/zoomout" />
+
 </RelativeLayout>

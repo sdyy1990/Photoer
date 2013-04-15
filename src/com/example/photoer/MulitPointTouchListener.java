@@ -24,7 +24,15 @@ class MulitPointTouchListener implements OnTouchListener {
     PointF mid = new PointF();    
     float oldDist = 1f;    
   
-  
+    public void reset(float minScaleR) {
+        start = new PointF();    
+        mid = new PointF();    
+        matrix = new Matrix();    
+        savedMatrix = new Matrix(); 
+        matrix.postScale(minScaleR, minScaleR);
+        image.setImageMatrix(matrix);    
+        
+    }
     public MulitPointTouchListener(ImageView image) {    
         super();    
         this.image = image;    

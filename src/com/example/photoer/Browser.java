@@ -1,6 +1,8 @@
 package com.example.photoer;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -24,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,14 +47,15 @@ public class Browser extends Activity {
     private Gallery gallery;
     private Button mSwitchButton;
     ArrayList<String> flist;
-	@SuppressWarnings("deprecation")
+
 	Bitmap smallprint;
 	ImageAdapter adapter;
+	Bundle bundle;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_browser);
-		Bundle bundle = (Browser.this.getIntent().getExtras());
+		bundle = (Browser.this.getIntent().getExtras());
 		uname = bundle.getString("uname");
 		ftpurl =  bundle.getString("ftpurl");
 		browserView = (BrowserView) findViewById(R.id.showImage); 
@@ -84,6 +88,13 @@ public class Browser extends Activity {
 		Button deleteButton = (Button) findViewById(R.id.buttonDelete);
 		Button exitButton = (Button) findViewById(R.id.buttonExit);
 		Button backButton = (Button) findViewById(R.id.buttonBack);
+		Button uploadButton = (Button) findViewById(R.id.buttonUpload);
+		uploadButton.setOnClickListener(new Button.OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				uploadFiles();
+			}});
 		backButton.setOnClickListener(new Button.OnClickListener(){
 
 			@Override
@@ -163,7 +174,8 @@ public class Browser extends Activity {
 		}
 		else {
 			Intent intent = new Intent();
-			intent.setClass(Browser.this, Welcome.class);
+			intent.setClass(Browser.this, Camera.class);
+			intent.putExtras((Browser.this.getIntent().getExtras()));
 			startActivity(intent);
 			Browser.this.finish();
 		}
@@ -292,5 +304,59 @@ public class Browser extends Activity {
 	public void setcurrentFilename(String imagename) {
 		this.currentFilename = imagename;
 	}
+	public boolean isuploading = false;
+	public void uploadFiles()  {
+		isuploading = true;
+		uploadcnt = 0;
+		handler.obtainMessage(-1,0).sendToTarget();	
+	}
+	int uploadtot, uploadcnt;
+	
+	private Handler handler =new Handler(){
+		 @Override
+		 //当有消息发送出来的时候就执行Handler的这个方法
+		 public void handleMessage(Message msg){
+			 if (msg.what == -1 || msg.what == 0){ //next_upload
+				 uploadcnt++;
+				 
+				 if (uploadcnt == flist.size()) {
+					 uploadsucc(uploadcnt);
+					 isuploading = false;
+					 return;
+				 }else {
+					 FTPClass ftpclass = new FTPClass(handler);
+						try {
+							ftpclass.ftpUpload(bundle.getString("ftpurl"), "21", bundle.getString("ftpusr")
+									, bundle.getString("ftppwd"), "/public/", flist.get(uploadcnt),  
+									new FileInputStream(new File(ALBUM_PATH +  flist.get(uploadcnt))));
+						} catch (FileNotFoundException e) {
+							Toast.makeText(Browser.this,"上传失败:文件错误",Toast.LENGTH_SHORT).show();
+							uploadfail();
+							return;
+						}
+				 }
+			 }
+			 else if (msg.what == 1 || msg.what == 2) {
+				 Toast.makeText(Browser.this,"请检查网络，上传失败",Toast.LENGTH_SHORT).show();
+				 uploadfail();
+			 }
+		 }
 
+		
+		 };
+		 public void uploadsucc(int cnt) {
+			 Toast.makeText(Browser.this,"成功上传了"+cnt+"个文件",Toast.LENGTH_SHORT).show();
+			 for(String fname:flist) {
+				 File file = new File(ALBUM_PATH+fname);
+				 file.delete();
+			 }
+			 getImgFileList();
+			 browserView.setImage(null);
+		}
+
+		protected void uploadfail() {
+			// TODO Auto-generated method stub
+			 Toast.makeText(Browser.this,"请检查网络，上传失败",Toast.LENGTH_SHORT).show();
+			 isuploading=false;
+		}
 }
