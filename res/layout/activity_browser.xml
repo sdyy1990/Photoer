@@ -1,5 +1,6 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black_overlay"
@@ -11,9 +12,75 @@
          TextureView, etc.
     -->
 
+
     <!--
          This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows.
     -->
 
-</FrameLayout>
+    <Gallery
+        android:id="@+id/gallery1"
+        android:layout_width="match_parent"
+        android:layout_height="80px"
+        android:layout_toRightOf="@+id/buttonBack" />
+
+    <com.example.photoer.BrowserView
+        android:id="@+id/showImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/gallery1" />
+
+    <Button
+        android:id="@+id/buttonExit"
+        android:layout_width="80px"
+        android:layout_height="80px"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/exit"
+        android:text="退出"
+        android:textColor="@android:color/black"
+        android:textSize="22sp" />
+
+    <Button
+        android:id="@+id/buttonUpload"
+        android:layout_width="80px"
+        android:layout_height="80px"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="41dp"
+        android:layout_toLeftOf="@+id/buttonExit"
+        android:background="@drawable/upload"
+        android:text="上传"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="22sp" />
+
+    <Button
+        android:id="@+id/buttonSwitchPrinter"
+        android:layout_width="80px"
+        android:layout_height="80px"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/gallery1"
+        android:background="@drawable/print"
+        android:text="Button"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="22sp" />
+
+    <Button
+        android:id="@+id/buttonDelete"
+        android:layout_width="80px"
+        android:layout_height="80px"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/buttonUpload"
+        android:background="@drawable/delete" />
+
+    <Button
+        android:id="@+id/buttonBack"
+        android:layout_width="80px"
+        android:layout_height="80px"
+        android:layout_alignBottom="@+id/gallery1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/back" />
+
+</RelativeLayout>

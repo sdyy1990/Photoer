@@ -21,42 +21,42 @@
 
     <ImageView
         android:id="@+id/shotView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="69dp"
+        android:layout_marginBottom="89dp"
         android:layout_marginRight="89dp"
         android:src="@drawable/camera" />
 
     <ImageView
         android:id="@+id/leftView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_alignBottom="@+id/shotView"
         android:layout_toLeftOf="@+id/shotView"
         android:src="@drawable/leftarrow" />
 
     <ImageView
         android:id="@+id/rightView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_alignTop="@+id/shotView"
         android:layout_toRightOf="@+id/downView"
         android:src="@drawable/rightarrow" />
 
     <ImageView
         android:id="@+id/downView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_alignLeft="@+id/shotView"
         android:layout_below="@+id/rightView"
         android:src="@drawable/downarrow" />
 
     <ImageView
         android:id="@+id/upView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_above="@+id/shotView"
         android:layout_toLeftOf="@+id/rightView"
         android:src="@drawable/uparrow" />

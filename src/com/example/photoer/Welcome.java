@@ -108,7 +108,7 @@ public class Welcome extends Activity {
 						Intent intent = new Intent();
 						intent.setClass(Welcome.this, Camera.class);
 						Bundle bundle = new Bundle();
-						bundle.putString("uname",name+"."+String.valueOf(rand));
+						bundle.putString("uname",name);//+"."+String.valueOf(rand));
 						bundle.putString("ftpurl", ftpurl);
 						bundle.putString("cameraurl", cameraurl);
 						

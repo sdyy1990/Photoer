@@ -48,6 +48,8 @@ public class Camera extends Activity {
 	private static int MESSAGE_PERCENTAGE_REPORT = 3;
 	private static int MESSAGE_DLFinish_REPORT = 4;
 	
+	private int small_width = 120;
+	private int small_height = 80;
 	//private static String shotUrlSuffix = "/cgi-bin/capture.cgi";
 	private static String shotUrlSuffix = "/ccgbin/capture.cgi";
 	private static String zoomUrlSuffix = "/cgi-bin/zoom.cgi?";
@@ -78,7 +80,7 @@ public class Camera extends Activity {
 				intent.setClass(Camera.this, Browser.class);
 				intent.putExtras((Camera.this.getIntent().getExtras()));
 				startActivity(intent);
-				//Welcome.this.finish();
+				Camera.this.finish();
 			}
 		});
 		buttonShot.setOnClickListener(new ImageView.OnClickListener(){
@@ -148,6 +150,7 @@ public class Camera extends Activity {
 		        	while ((readLen = is.read(tmp))>0){
 		        		System.arraycopy(tmp, 0, imgData, destPos, readLen);
 		        		mhandler.obtainMessage(MESSAGE_PERCENTAGE_REPORT, 0,destPos);
+		        		System.out.println(destPos);
 		        		destPos += readLen;
 		        	}
 		        	Bitmap downloadedBitmap = BitmapFactory.decodeByteArray(imgData, 0, length);
@@ -203,13 +206,21 @@ public class Camera extends Activity {
 		if(!dirFile.exists()){     dirFile.mkdir();       }  
 		String saveFilename = uname + (new SimpleDateFormat(".MMddHHmmss")).format(new Date()) +".jpg";
 		File myCaptureFile = new File(ALBUM_PATH + saveFilename);  
-		BufferedOutputStream bos;
+		File mySmallFile = new File(ALBUM_PATH +saveFilename+".jpg");
+		BufferedOutputStream bos,bos2;
 		try {
 			bos = new BufferedOutputStream(new FileOutputStream(myCaptureFile));
-			bmp.compress(Bitmap.CompressFormat.JPEG, 99, bos);  
+			bmp.compress(Bitmap.CompressFormat.JPEG, 80, bos);  
 			bos.flush();  
 			bos.close();  
+            Bitmap smp = Bitmap.createScaledBitmap(bmp, small_width, small_height, false);
+            bos2 = new BufferedOutputStream(new FileOutputStream(mySmallFile));
+			smp.compress(Bitmap.CompressFormat.JPEG, 80, bos2);  
+			bos2.flush(); 
+			bos2.close();
+			bmp.recycle(); smp.recycle();
 			Toast.makeText(Camera.this,"图片已保存",Toast.LENGTH_SHORT).show();
+			System.gc();
 		} catch (FileNotFoundException e) {
 			Toast.makeText(Camera.this,"建立文件错误 FileNotFoundException",Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
@@ -224,9 +235,11 @@ public class Camera extends Activity {
 		public void dispatchMessage (Message msg){
 			System.out.println(msg.what);
 			if (msg.what == MESSAGE_SIZE_REPORT) {
+				System.out.println(msg.arg1);
 			   return;
 			}
 			if (msg.what == MESSAGE_PERCENTAGE_REPORT) {
+				System.out.println(msg.arg1);
 				return;
 		    }
 			if (msg.what == MESSAGE_GETFILENAME){
@@ -239,6 +252,7 @@ public class Camera extends Activity {
 				return;
 			}		        		
 			if (msg.what == MESSAGE_DLFinish_REPORT) {
+				networkBusy = false;
 				Finishdownload((Bitmap)msg.obj);
 			}
 			if (msg.what<0) networkBusy = false;
