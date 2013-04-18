@@ -45,7 +45,10 @@ public class BrowserView extends ImageView {
 		if (!file.exists()) {
 			imagename = imagename.substring(0,imagename.indexOf(".jpg"))+".print.jpg";
 		}
+		System.out.println(ALBUM_PATH+imagename);
+		System.gc();
 		bmp = BitmapFactory.decodeFile(ALBUM_PATH+imagename);
+
 		owner.setcurrentFilename(imagename);
 		owner.setswitchButton();
 		this.setImageBitmap(bmp);

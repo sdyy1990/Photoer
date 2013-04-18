@@ -91,4 +91,21 @@
         android:layout_marginLeft="28dp"
         android:src="@drawable/zoomout" />
 
+    <WebView
+        android:id="@+id/webView1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/downView"
+        android:layout_alignTop="@+id/buttonbrowser"
+        android:layout_toLeftOf="@+id/leftView"
+        android:layout_toRightOf="@+id/zoomInView" />
+
+    <TextView
+        android:id="@+id/textsize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/buttonbrowser"
+        android:textColor="@android:color/holo_blue_light" />
+
 </RelativeLayout>

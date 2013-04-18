@@ -21,6 +21,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -30,8 +31,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Camera extends Activity {
@@ -47,15 +50,17 @@ public class Camera extends Activity {
 	private static int MESSAGE_SIZE_REPORT = 2;
 	private static int MESSAGE_PERCENTAGE_REPORT = 3;
 	private static int MESSAGE_DLFinish_REPORT = 4;
-	
+	private static int MESSAGE_Storage_file = 5;
+
 	private int small_width = 120;
 	private int small_height = 80;
-	//private static String shotUrlSuffix = "/cgi-bin/capture.cgi";
-	private static String shotUrlSuffix = "/ccgbin/capture.cgi";
+private static String shotUrlSuffix = "/cgi-bin/capture.cgi";
+	//private static String shotUrlSuffix = "/ccgbin/capture.cgi";
 	private static String zoomUrlSuffix = "/cgi-bin/zoom.cgi?";
 	private static String moveUrlSuffix = "/cgi-bin/move.cgi?";
 	private static String pictureUrlFolder = "/img/";
 	private String cameraurl,ftpurl,uname,dlFilename;
+	TextView textView ;
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_camera);
@@ -70,15 +75,24 @@ public class Camera extends Activity {
 		buttonDown = (ImageView) findViewById(R.id.downView);
 		buttonZoomIn = (ImageView) findViewById(R.id.zoomInView);
 		buttonZoomOut = (ImageView) findViewById(R.id.zoomOutView);
+		textView = (TextView) findViewById(R.id.textsize);
+	    WebView webview = (WebView) findViewById(R.id.webView1);  
+	    webview.getSettings().setJavaScriptEnabled(true);  
+	    String url2 = cameraurl+":8080/javascript_simple.html";
+	    webview.loadUrl(url2);
+	    webview.getSettings().setSupportZoom(true);
+	    webview.getSettings().setBuiltInZoomControls(true);
+	        
 		Button buttonBrowser = (Button) findViewById(R.id.buttonbrowser);
 		networkBusy = false;
 		mhandler = new MyHandler();
-		buttonLeft.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"L"));
-		buttonRight.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"R"));
-		buttonUp.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"U"));
-		buttonDown.setOnClickListener(new myOnClickListener(cameraurl+moveUrlSuffix+"D"));
+		buttonLeft.setOnClickListener(new myOnClickListener2(cameraurl+moveUrlSuffix+"L"));
+		buttonRight.setOnClickListener(new myOnClickListener2(cameraurl+moveUrlSuffix+"R"));
+		buttonUp.setOnClickListener(new myOnClickListener2(cameraurl+moveUrlSuffix+"U"));
+		buttonDown.setOnClickListener(new myOnClickListener2(cameraurl+moveUrlSuffix+"D"));
 		buttonZoomIn.setOnClickListener(new myOnClickListener(cameraurl+zoomUrlSuffix,true,0,9));
 		buttonZoomOut.setOnClickListener(new myOnClickListener(cameraurl+zoomUrlSuffix,false,0,9));
+		
 		new myOnClickListener(cameraurl+zoomUrlSuffix,false,0,9).zoomTo(0);
 		buttonBrowser.setOnClickListener(new Button.OnClickListener() {
 
@@ -159,15 +173,19 @@ public class Camera extends Activity {
 		        	while ((readLen = is.read(tmp))>0){
 		        		System.arraycopy(tmp, 0, imgData, destPos, readLen);
 		        		mhandler.obtainMessage(MESSAGE_PERCENTAGE_REPORT, 0,destPos);
-//		        		System.out.println(destPos);
+		        		//System.out.println(destPos);
 		        		destPos += readLen;
 		        	}
 		        	is.close();
 		        	System.gc();
-		        	Bitmap downloadedBitmap = BitmapFactory.decodeByteArray(imgData, 0, length);
+		        	BitmapFactory.Options opts = new BitmapFactory.Options();
+		        	opts.inSampleSize = 4;
+		        	Bitmap downloadedBitmap = BitmapFactory.decodeByteArray(imgData, 0, length,opts);
 		            if (downloadedBitmap == null) mhandler.obtainMessage(-6).sendToTarget();  
 		            else ;// display image  
 		            mhandler.obtainMessage(MESSAGE_DLFinish_REPORT,0,0,downloadedBitmap).sendToTarget();
+		            mhandler.obtainMessage(MESSAGE_Storage_file,0,0,imgData).sendToTarget();
+		            
 		        }
 			}catch (ClientProtocolException e){
 				mhandler.obtainMessage(-5).sendToTarget();
@@ -195,7 +213,9 @@ public class Camera extends Activity {
 				HttpResponse response = dfh.execute(httpRequest);
 				InputStream is = response.getEntity().getContent();
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
-				dlFilename = br.readLine();
+				dlFilename = br.readLine()+".jpg";
+				//TODO 
+				
 				System.out.println(dlFilename);
 				mhandler.obtainMessage(MESSAGE_GETFILENAME, response.getStatusLine().getStatusCode()).sendToTarget();
 				
@@ -210,12 +230,12 @@ public class Camera extends Activity {
 		
 		
 	}
-
+	String saveFilename;
 	private void Finishdownload(Bitmap bmp) {
 		
 	    File dirFile = new File(ALBUM_PATH);  
 		if(!dirFile.exists()){     dirFile.mkdir();       }  
-		String saveFilename = uname + (new SimpleDateFormat(".MMddHHmmss")).format(new Date()) +".jpg";
+		saveFilename = uname + (new SimpleDateFormat(".MMddHHmmss")).format(new Date()) +".jpg";
 		File myCaptureFile = new File(ALBUM_PATH + saveFilename);  
 		File mySmallFile = new File(ALBUM_PATH +saveFilename+".jpg");
 		BufferedOutputStream bos,bos2;
@@ -242,17 +262,39 @@ public class Camera extends Activity {
 	}
 
 	MyHandler mhandler;
+	int picturesize;
 	private class MyHandler extends Handler{
 		public void dispatchMessage (Message msg){
 			System.out.println(msg.what);
 			if (msg.what == MESSAGE_SIZE_REPORT) {
-				System.out.println(msg.arg1);
+				picturesize = msg.arg1;
 			   return;
 			}
 			if (msg.what == MESSAGE_PERCENTAGE_REPORT) {
-				System.out.println(msg.arg1);
+				textView.setText(String.valueOf(msg.arg1)+"/"+String.valueOf(picturesize));
+				textView.invalidate();
 				return;
 		    }
+			if (msg.what == MESSAGE_Storage_file) {
+				byte[] res  = (byte []) msg.obj;
+				File myRawFile = new File(ALBUM_PATH +saveFilename +".raw.jpg"); 
+				
+				BufferedOutputStream bos;
+				try {
+					bos = new BufferedOutputStream(new FileOutputStream(myRawFile));
+					bos.write(res);
+					bos.flush();  
+					bos.close();  
+					System.gc();
+				} catch (FileNotFoundException e) {
+					Toast.makeText(Camera.this,"建立文件错误 FileNotFoundException",Toast.LENGTH_SHORT).show();
+					e.printStackTrace();
+				} catch (IOException e) {
+					Toast.makeText(Camera.this,"读写错误 IOException",Toast.LENGTH_SHORT).show();
+					e.printStackTrace();
+				}  
+			}
+				
 			if (msg.what == MESSAGE_GETFILENAME){
 				networkBusy = false;
 				if (msg.arg1 >=0) {
@@ -299,12 +341,6 @@ public class Camera extends Activity {
 		
 		private boolean iszoom,isZoomIn;
 		int zoomMin,zoomMax;
-		myOnClickListener(final String str) {
-			super();
-			this.motionURL = str;
-			this.iszoom = false;
-			lUrl = null;
-		}
 
 		myOnClickListener(final String str,boolean isZoomIn,int zoomMin,int zoomMax) {
 			super();
@@ -323,7 +359,7 @@ public class Camera extends Activity {
 				if (zoomLevel>zoomMax) zoomLevel = zoomMax;
 				zoomTo(zoomLevel);
 			}
-			new Thread(new getMotion()).start();
+            new Thread(new getMotion()).start();
 		}
 		
 		private void zoomTo(int zoomLevel) {
@@ -334,7 +370,43 @@ public class Camera extends Activity {
 		private class getMotion implements Runnable{
 			@Override
 			public void run() {
-				String url = cameraurl + motionURL;
+				String url = motionURL;
+				System.out.println(url);
+				HttpGet httpRequest = new HttpGet(url);
+				try{
+					BasicHttpParams hpms = new BasicHttpParams();
+					DefaultHttpClient dfh = new DefaultHttpClient(hpms);
+					dfh.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
+					dfh.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 11000);
+					dfh.execute(httpRequest);
+				}catch (ClientProtocolException e){
+					mhandler.obtainMessage(-9).sendToTarget();
+				}catch (IOException e) {
+					mhandler.obtainMessage(-10).sendToTarget();			
+				}catch (Exception e) {
+					mhandler.obtainMessage(-11).sendToTarget();
+				}
+			}
+			
+			
+		}
+	}
+	private class myOnClickListener2 implements Button.OnClickListener {
+		private String motionURL;
+		myOnClickListener2(final String str) {
+			super();
+			this.motionURL = str;
+		}
+
+		@Override
+		public void onClick(View arg0) {
+            new Thread(new getMotion()).start();
+		}
+		private class getMotion implements Runnable{
+			@Override
+			public void run() {
+				String url = motionURL;
+				System.out.println(url);
 				HttpGet httpRequest = new HttpGet(url);
 				try{
 					BasicHttpParams hpms = new BasicHttpParams();

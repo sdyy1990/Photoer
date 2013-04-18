@@ -1,6 +1,8 @@
 package com.example.photoer;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -30,12 +32,18 @@ public class FTPClass {
 	 private String murl,mport,musername,mpwd,mrmp,mfname;
 	 FileInputStream mfis;
 	 
-	 public String ftpUpload(String url, String port, String username,String password, String remotePath,String fileName,FileInputStream fis) {
+	 public String ftpUpload0(String url, String port, String username,String password, String remotePath,String fileName,String fname) {
 		 ftpClient = new FTPClient();
 		 String returnMessage = "0";
 		 murl=url; mport=port;musername=username;mpwd=password;mrmp=remotePath;
 		 mfname=fileName;
-		 mfis=fis;
+		 try {
+			mfis=new FileInputStream(new File(fname));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
 		 new Thread(new runFTP()).start();
 	     return returnMessage;
 			 
@@ -55,6 +63,7 @@ public class FTPClass {
 						 ftpClient.changeWorkingDirectory(mrmp);
 						 ftpClient.setBufferSize(1024);
 						 ftpClient.setControlEncoding("UTF-8");
+						 ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
 						 ftpClient.enterLocalPassiveMode();
 						 ftpClient.storeFile(mfname, mfis);
 						 handler.obtainMessage(0, 0, 0, mrmp).sendToTarget();
@@ -68,6 +77,7 @@ public class FTPClass {
 					 //IOUtils.closeQuietly(fis);
 				 try {
 					 ftpClient.disconnect();
+					 mfis.close();
 				 } catch (IOException e) {
 					 	e.printStackTrace();
 					 	handler.obtainMessage(2).sendToTarget();

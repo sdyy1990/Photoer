@@ -25,9 +25,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class Welcome extends Activity {
-	String ftpurl,cameraurl,ftpusr,ftppwd;
+	String ftpurl, cameraurl, ftpusr, ftppwd, uploadfileurl;
+
 	@Override
-	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_welcome);
@@ -37,27 +37,21 @@ public class Welcome extends Activity {
 		try {
 			is = Welcome.this.openFileInput("URLS.txt");
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			ftpurl = (br.readLine());
 			cameraurl = (br.readLine());
-			ftpusr = (br.readLine());
-			ftppwd = (br.readLine());
-			
+			uploadfileurl = (br.readLine());
+
 			is.close();
 		} catch (FileNotFoundException e) {
-			ftpurl = "192.168.1.108";
-			cameraurl = "http://192.168.1.106";
-			ftpusr = "anonymous";
-			ftppwd = "a@b.com";
+			cameraurl = "http://192.168.1.101";
+			uploadfileurl = "http://172.25.2.206/upload_file.php";
 			e.printStackTrace();
 		} catch (IOException e) {
-			ftpurl = "192.168.1.108";
-			cameraurl = "http://192.168.1.106";
-			ftpusr = "anonymous";
-			ftppwd = "a@b.com";
+			cameraurl = "http://192.168.1.101";
+			uploadfileurl = "http://172.25.2.206/upload_file.php";
 			e.printStackTrace();
 		}
-		enter.setOnClickListener(new Button.OnClickListener(){
-			
+		enter.setOnClickListener(new Button.OnClickListener() {
+
 			@Override
 			public void onClick(View arg0) {
 				final String name = nameText.getText().toString();
@@ -66,95 +60,97 @@ public class Welcome extends Activity {
 					final EditText a2 = new EditText(Welcome.this);
 					final EditText a3 = new EditText(Welcome.this);
 					final EditText a4 = new EditText(Welcome.this);
-					a1.setText(ftpurl);
 					a2.setText(cameraurl);
-					a3.setText(ftpusr);
-					a4.setText(ftppwd);
-					new AlertDialog.Builder(Welcome.this).setTitle("FTP IP").setIcon(
-						     android.R.drawable.ic_dialog_info).setView(a1)
-						     .setPositiveButton("OK",  new OnClickListener(){
+					a3.setText(uploadfileurl);
+					// a4.setText(ftppwd);
+					new AlertDialog.Builder(Welcome.this).setTitle("camra IP")
+							.setIcon(android.R.drawable.ic_dialog_info)
+							.setView(a2)
+							.setPositiveButton("OK", new OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int which) {
+									cameraurl = a2.getText().toString();
+								}
+							}).create().show();
+					new AlertDialog.Builder(Welcome.this)
+							.setTitle("uploadfileurl")
+							.setIcon(android.R.drawable.ic_dialog_info)
+							.setView(a3)
+							.setPositiveButton("OK", new OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int which) {
+									uploadfileurl = a3.getText().toString();
+								}
+							}).create().show();
 
-										@Override
-										public void onClick(DialogInterface dialog,	int which) {
-											ftpurl = a1.getText().toString();
-										}} ).create().show();
-					
-					new AlertDialog.Builder(Welcome.this).setTitle("camra IP").setIcon(
-						     android.R.drawable.ic_dialog_info).setView(a2)
-						     .setPositiveButton("OK",  new OnClickListener(){
-										public void onClick(DialogInterface dialog,	int which) {
-											cameraurl = a2.getText().toString();
-										}} ).create().show();
-					new AlertDialog.Builder(Welcome.this).setTitle("FTP user").setIcon(
-						     android.R.drawable.ic_dialog_info).setView(a3)
-						     .setPositiveButton("OK",  new OnClickListener(){
-										public void onClick(DialogInterface dialog,	int which) {
-											ftpusr = a3.getText().toString();
-										}} ).create().show();
-					
-					new AlertDialog.Builder(Welcome.this).setTitle("FTP pwd").setIcon(
-						     android.R.drawable.ic_dialog_info).setView(a4)
-						     .setPositiveButton("OK",  new OnClickListener(){
-
-										@Override
-										public void onClick(DialogInterface dialog,	int which) {
-											ftppwd = a4.getText().toString();
-										}} ).create().show();
-					
 					try {
-						FileOutputStream os = Welcome.this.openFileOutput("URLS.txt",MODE_PRIVATE);
-						BufferedWriter br = new BufferedWriter(new OutputStreamWriter(os));
-						br.write(ftpurl+"\n");
-						br.write(cameraurl+"\n");
-						br.write(ftpusr+"\n");
-						br.write(ftppwd+"\n");
+						FileOutputStream os = Welcome.this.openFileOutput(
+								"URLS.txt", MODE_PRIVATE);
+						BufferedWriter br = new BufferedWriter(
+								new OutputStreamWriter(os));
+						br.write(cameraurl + "\n");
+						br.write(uploadfileurl + "\n");
 						br.close();
 						os.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
 					return;
 				}
 				if (!checkleagal(name)) {
-				   new AlertDialog.Builder(Welcome.this).setTitle("消息").setMessage("用户名只能包括英文字母和数字")
-				  .setNegativeButton("返回重填", new DialogInterface.OnClickListener(){
+					new AlertDialog.Builder(Welcome.this)
+							.setTitle("消息")
+							.setMessage("用户名只能包括英文字母和数字")
+							.setNegativeButton("返回重填",
+									new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface arg0, int arg1) {
-						
-					}} ).create().show();
-				    return;
+										@Override
+										public void onClick(
+												DialogInterface arg0, int arg1) {
+
+										}
+									}).create().show();
+					return;
 				}
-				new AlertDialog.Builder(Welcome.this).setTitle("确认").setMessage("请确认用户名   "+name)
-				.setPositiveButton("OK", new DialogInterface.OnClickListener(){
+				new AlertDialog.Builder(Welcome.this)
+						.setTitle("确认")
+						.setMessage("请确认用户名   " + name)
+						.setPositiveButton("OK",
+								new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						//start activity
-						int rand = (new Random()).nextInt(1024768);
-						Intent intent = new Intent();
-						intent.setClass(Welcome.this, Camera.class);
-						Bundle bundle = new Bundle();
-						bundle.putString("uname",name);//+"."+String.valueOf(rand));
-						bundle.putString("ftpurl", ftpurl);
-						bundle.putString("cameraurl", cameraurl);
-						bundle.putString("ftpusr", ftpusr);
-						bundle.putString("ftppwd", ftppwd);
-						intent.putExtras(bundle);
-						startActivity(intent);
-						Welcome.this.finish();
-					}})
-				.setNegativeButton("返回重填", new DialogInterface.OnClickListener(){
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// start activity
+										int rand = (new Random())
+												.nextInt(1024768);
+										Intent intent = new Intent();
+										intent.setClass(Welcome.this,
+												Camera.class);
+										Bundle bundle = new Bundle();
+										bundle.putString("uname", name);// +"."+String.valueOf(rand));
+										bundle.putString("cameraurl", cameraurl);
+										bundle.putString("uploadfileurl",
+												uploadfileurl);
+										intent.putExtras(bundle);
+										startActivity(intent);
+										Welcome.this.finish();
+									}
+								})
+						.setNegativeButton("返回重填",
+								new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
-						
-					}}).create().show();
-						
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// TODO Auto-generated method stub
+
+									}
+								}).create().show();
+
 			}
-			
+
 		});
 	}
 
@@ -164,11 +160,10 @@ public class Welcome extends Activity {
 		getMenuInflater().inflate(R.menu.welcome, menu);
 		return true;
 	}
-	
-	public boolean checkleagal(String s){
+
+	public boolean checkleagal(String s) {
 		return s.matches("[a-zA-Z0-9]+");
 
-		
 	}
 
 }

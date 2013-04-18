@@ -5,6 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreConnectionPNames;
+
 
 
 
@@ -38,11 +46,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 public class Browser extends Activity {
-    String uname,ftpurl;
+    String uname,ftpurl,uploadfileurl;
 
     private final static String ALBUM_PATH  
             = Environment.getExternalStorageDirectory() + "/download/";
-    public int selectedid;
+    public int selectedid; 
     private BrowserView browserView;
     private Gallery gallery;
     private Button mSwitchButton;
@@ -56,8 +64,8 @@ public class Browser extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_browser);
 		bundle = (Browser.this.getIntent().getExtras());
+		uploadfileurl = bundle.getString("uploadfileurl");
 		uname = bundle.getString("uname");
-		ftpurl =  bundle.getString("ftpurl");
 		browserView = (BrowserView) findViewById(R.id.showImage); 
 		browserView.setOwner(this);
 		mSwitchButton = (Button) findViewById(R.id.buttonSwitchPrinter);
@@ -74,16 +82,19 @@ public class Browser extends Activity {
 				File file = new File(ALBUM_PATH+currentFilename);
 				String newname;
 				if (currentPrintable) {
-				   file.renameTo(new File( newname = ALBUM_PATH+namewithoutprint(currentFilename)));
+				   file.renameTo(new File(  ALBUM_PATH+namewithoutprint(currentFilename)));
+				   newname = namewithoutprint(currentFilename);
 				   Toast.makeText(Browser.this, "这张照片将只保留电子版", Toast.LENGTH_SHORT).show();
 				}
 				else{ 
-				   file.renameTo(new File(newname= ALBUM_PATH+currentFilename.substring(0,currentFilename.indexOf(".jpg"))+".print.jpg"));
+				   file.renameTo(new File(ALBUM_PATH+currentFilename.substring(0,currentFilename.indexOf(".jpg"))+".print.jpg"));
+				   newname = currentFilename.substring(0,currentFilename.indexOf(".jpg"))+".print.jpg";
 				   Toast.makeText(Browser.this, "这张照片将被打印", Toast.LENGTH_SHORT).show();
 				}
+				System.out.println(currentFilename+"..."+newname);
 				currentFilename = newname;
-				setswitchButton();
 				getImgFileList();
+				setswitchButton();
 			}});
 		Button deleteButton = (Button) findViewById(R.id.buttonDelete);
 		Button exitButton = (Button) findViewById(R.id.buttonExit);
@@ -93,6 +104,10 @@ public class Browser extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
+				if (isuploading) {
+					Toast.makeText(Browser.this,"uploading，请稍候",Toast.LENGTH_SHORT).show();
+					return;
+				}
 				uploadFiles();
 			}});
 		backButton.setOnClickListener(new Button.OnClickListener(){
@@ -152,6 +167,7 @@ public class Browser extends Activity {
 			}});
 		
 		System.gc();
+		//TriggerUploadFile("HH.apk");
 		gallery = (Gallery)findViewById(R.id.gallery1);
         adapter.setActivity(Browser.this);
         TypedArray typedArray = obtainStyledAttributes(R.styleable.Gallery);
@@ -188,7 +204,9 @@ public class Browser extends Activity {
         File[] files = dirFile.listFiles();
 		for (File onefile:files) {
 			String fname = onefile.getName();
-			if (fname.startsWith(uname) && fname.indexOf(".jpg.jpg")<0) {
+			if (fname.startsWith(uname) 
+					&& fname.indexOf(".jpg.jpg")<0 &&
+					(fname.indexOf(".raw")<0 )) {
 				flist.add(fname);
 
 				System.out.println(fname);
@@ -272,6 +290,7 @@ public class Browser extends Activity {
 
     private String namewithoutprint(String fname) {
     	int index;
+    	System.out.println(fname);
 		if ((index = fname.indexOf(".print"))<0)
 		return fname;
 		else return fname.substring(0,index)+".jpg";
@@ -316,24 +335,16 @@ public class Browser extends Activity {
 		 @Override
 		 //当有消息发送出来的时候就执行Handler的这个方法
 		 public void handleMessage(Message msg){
+			 System.out.println("handler msg"+msg);
 			 if (msg.what == -1 || msg.what == 0){ //next_upload
-				 uploadcnt++;
-				 
 				 if (uploadcnt == flist.size()) {
 					 uploadsucc(uploadcnt);
 					 isuploading = false;
 					 return;
 				 }else {
-					 FTPClass ftpclass = new FTPClass(handler);
-						try {
-							ftpclass.ftpUpload(bundle.getString("ftpurl"), "21", bundle.getString("ftpusr")
-									, bundle.getString("ftppwd"), "/public/", flist.get(uploadcnt),  
-									new FileInputStream(new File(ALBUM_PATH +  flist.get(uploadcnt))));
-						} catch (FileNotFoundException e) {
-							Toast.makeText(Browser.this,"上传失败:文件错误",Toast.LENGTH_SHORT).show();
-							uploadfail();
-							return;
-						}
+					 TriggerUploadFile(flist.get(uploadcnt));
+					 uploadcnt++;
+					 Toast.makeText(Browser.this,"Start to upload file:"+uploadcnt,Toast.LENGTH_SHORT).show();
 				 }
 			 }
 			 else if (msg.what == 1 || msg.what == 2) {
@@ -346,16 +357,58 @@ public class Browser extends Activity {
 		 };
 		 public void uploadsucc(int cnt) {
 			 Toast.makeText(Browser.this,"成功上传了"+cnt+"个文件",Toast.LENGTH_SHORT).show();
-			 for(String fname:flist) {
+			 /*for(String fname:flist) {
 				 File file = new File(ALBUM_PATH+fname);
 				 file.delete();
 			 }
+			 */
 			 getImgFileList();
+			 
 			 browserView.setImage(null);
 		}
 
+		protected void TriggerUploadFile(String string) {
+			UPLOADFILE dlf = new UPLOADFILE();
+			dlf.sethandler(handler);
+			dlf.seturl(string);
+			System.out.println("uploading"+ dlf.getname() +" "+ uploadfileurl);
+
+			new Thread(dlf).start();
+			
+		}
+		private class UPLOADFILE implements Runnable{
+			private String fname;
+			private String uname;
+
+			private Handler mhandler;
+			public void sethandler(Handler hd) {
+				this.mhandler = hd;
+			}
+			public String getname() {
+				return fname;
+			}
+			public void seturl(String name) {
+				this.fname = namewithoutprint(name)+".raw.jpg";
+				this.uname = name;
+			}
+			@Override
+			public void run() {
+				//FormFile formFile = new FormFile(uname,  new File(ALBUM_PATH + uname), "file", "image/jpeg"); // this line uploads 
+				FormFile formFile = new FormFile(uname,  new File(ALBUM_PATH + fname), "file", "image/jpeg"); //this line uploads raw data
+				
+				try {
+					boolean isSuccess = HttpRequestUtil.uploadFile(uploadfileurl, null, formFile);
+					mhandler.obtainMessage(0).sendToTarget();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}}
+		
+
 		protected void uploadfail() {
-			// TODO Auto-generated method stub
+			
 			 Toast.makeText(Browser.this,"请检查网络，上传失败",Toast.LENGTH_SHORT).show();
 			 isuploading=false;
 		}
