@@ -4,7 +4,7 @@
     <string name="app_name">Photoer</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_welcome">Welcome</string>
+    <string name="title_activity_welcome">飞畅航拍</string>
     <string name="title_activity_camera">Camera</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
